@@ -57,13 +57,24 @@ fc_challenge_params_dict = {
                 "sindy_30" : { "l" : 30 },
                 "sindy_50" : { "l" : 50 },
                 "sindy_100" : { "l" : 100 },
-            }
-    ,
+            },
     "lorenz" : {
         "default" : {
             "l" : 9,  #MUST BE ODD > 3
             "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
             "t" : 50,
+        },
+        "ode": {
+            "l": 3,
+            "e": 3,
+            "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
+            "t": 50,
+            "trials": 10,
+            "evaluate": {
+                "fit_kwargs": {
+                    "epochs": 100
+                },
+            }
         },
         "lr" : { #FAIL
             "N" : [int(n) for n in np.logspace(1, 3, num=20, endpoint=True)],

@@ -23,9 +23,9 @@ from dynadojo.baselines.ode import ODE
 ALL_BASELINES = [
     # AugODE,
     # CNN,
-    DMD,
-    DNN,
-    # ODE,
+    # DMD,
+    # DNN,
+    ODE,
     # SINDy
 ]
 

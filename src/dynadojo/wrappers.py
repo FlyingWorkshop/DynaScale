@@ -90,7 +90,7 @@ class AlgorithmChecker:
         """
         pred = self._alg.predict(x0, timesteps, **kwargs)
         n = x0.shape[0]
-        assert pred.shape == (n, timesteps, self._alg.embed_dim)
+        assert pred.shape == (n, timesteps, self._alg.embed_dim), f"pred has shape {pred.shape}, but it should be ({n}, {timesteps}, {self._alg.embed_dim})"
         return pred
 
     def fit(self, x: np.ndarray, **kwargs) -> None:
