@@ -2,16 +2,21 @@
 Deep Neural Network (DNN)
 ===========================
 """
+from abc import abstractmethod
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+
+import torch
+from torch.utils.data import DataLoader, TensorDataset, random_split
+import time
 
 from ..abstractions import AbstractAlgorithm
 
 
-class DNN(AbstractAlgorithm):
-    """Deep Neural Network (DNN). Contains 5 hidden layers with 30 neurons each."""
 
+class TorchBaseClass(AbstractAlgorithm, torch.nn.Module):
+    """
+    Base class for all PyTorch neural network models.
+    """
     def __init__(
             self,
             embed_dim,
@@ -19,45 +24,109 @@ class DNN(AbstractAlgorithm):
             max_control_cost=0,
             activation='relu',
             seed=None,
+            device=None,
             **kwargs):
-        """
-        Initialize the class.
+        AbstractAlgorithm.__init__(self, embed_dim, timesteps, max_control_cost, seed=seed, **kwargs)
+        torch.nn.Module.__init__(self)
 
-        Parameters
-        -------------
-        embed_dim : int
-            The embedded dimension of the system. Recommended to keep embed dimension small (e.g., <10).
-        timesteps : int
-            The timesteps of the training trajectories. Must be greater than 2.
-        activation : str, optional
-            The activation function used in the hidden layers. See ``tensorflow`` documentation for more details on
-            acceptable activations. Defaults to ``relu``.
-        max_control_cost : float, optional
-            Ignores control, so defaults to 0.
-        **kwargs : dict, optional
-            Additional keyword arguments
-        """
-        super().__init__(embed_dim, timesteps, max_control_cost, seed=seed, **kwargs)
         if seed:
-            keras.utils.set_random_seed(812)
-            # tf.config.experimental.enable_op_determinism()
-        kreg = "l2"
-        self.model = tf.keras.Sequential([
-            keras.Input(shape=(None, embed_dim)),
-            keras.layers.Dense(30, activation=activation, kernel_regularizer=kreg),
-            keras.layers.Dense(30, activation=activation, kernel_regularizer=kreg),
-            keras.layers.Dense(30, activation=activation, kernel_regularizer=kreg),
-            keras.layers.Dense(30, activation=activation, kernel_regularizer=kreg),
-            keras.layers.Dense(30, activation=activation, kernel_regularizer=kreg),
-            keras.layers.Dense(embed_dim, kernel_regularizer=kreg)
-        ])
-        self.model.compile(optimizer="adam", loss="mean_squared_error")
+            torch.manual_seed(seed)
 
-    def fit(self, x: np.ndarray, epochs=2000, verbose=0, **kwargs):
-        head = x[:, :-1, :]
-        tail = x[:, 1:, :]
-        callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
-        self.model.fit(head, tail, validation_split=0.2, epochs=epochs, callbacks=[callback], verbose=verbose)
+        self.device = device or "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        print(f"Using device: {self.device}")
+        # self.model = self.create_model()
+        self.criterion = torch.nn.MSELoss()
+    
+    # @abstractmethod
+    # def create_model(self):
+    #     raise NotImplementedError
+
+    @abstractmethod
+    def forward(self, x):
+        raise NotImplementedError
+    
+    def fit(self, x: np.ndarray, 
+            epochs=5000,
+            batch_size=32, 
+            lr=1e-2,
+            validation_split=0.1,
+            patience=15, 
+            min_delta=0.0,
+            start_early_stop_from_epoch=1000,
+            verbose=0, **kwargs):
+        
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr) #, weight_decay=1e-2)
+
+        if validation_split == 0 or patience == 0:
+            if verbose > 0:
+                print('Training on the full dataset, no validation, no early stopping')
+            train = np.array(x)
+            train_size = len(x)
+            early_stopper = None
+        else:
+            if verbose > 0:
+                print(f'Training on {1-validation_split} of the data, validating on the rest')
+                print(f'Early stopping from epoch {start_early_stop_from_epoch} with patience {patience} and min_delta {min_delta}')
+            validation_size = int(x.shape[0] * validation_split)
+            train_size = len(x) - validation_size
+            train, val = random_split(x, [len(x)-validation_size, validation_size])
+            train = np.array(train)
+            val = np.array(train)
+
+            #Validation dataset
+            x_val = torch.tensor(np.array(val[:, :-1, :]), dtype=torch.float32).to(self.device) 
+            y_val = torch.tensor(np.array(val[:, 1:, :]), dtype=torch.float32).to(self.device) 
+
+            early_stopper = EarlyStopper(patience=patience, min_delta=min_delta, start_from_epoch=start_early_stop_from_epoch)
+
+        if batch_size > train_size:
+            batch_size = train_size
+        
+        x = torch.tensor(np.array(train[:, :-1, :]), dtype=torch.float32)
+        y = torch.tensor(np.array(train[:, 1:, :]), dtype=torch.float32)
+
+        dataloader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=True) #, num_workers=4)
+
+        losses = []
+        self.train() 
+        training_start_time = time.time()
+        print(f'Dataloader length: {len(dataloader)}')
+        for epoch in range(epochs):
+            self.train()
+            epoch_loss = 0
+            for input_seq, target_seq in dataloader:
+                input_seq, target_seq = input_seq.to(self.device), target_seq.to(self.device)
+                optimizer.zero_grad(set_to_none=True)
+                y_hat = self.forward(input_seq)
+                loss = self.criterion(y_hat, target_seq)
+                epoch_loss += loss.item()
+                loss.backward()
+                optimizer.step()
+
+            losses.append(epoch_loss/len(dataloader))
+
+            if early_stopper is None:
+                if verbose > 0 and (epoch+1) % 10 == 0:
+                    print(f'Epoch [{epoch+1}/{epochs}], Loss: {epoch_loss/len(dataloader):.4f}, took {time.time() - training_start_time:.2f}s')
+                    training_start_time = time.time()
+            else:
+                self.eval()  # Set model to evaluation mode
+                with torch.no_grad():  # Disable gradient calculation for validation
+                    # Make predictions on validation set 
+                    val_outputs = self(x_val).detach()
+                    val_loss = self.criterion(val_outputs, y_val).item()
+                
+                    if verbose > 0 and (epoch+1) % 10 == 0:
+                        print(f'Epoch [{epoch+1}/{epochs}], Loss: {epoch_loss/len(dataloader):.4f}, Val Loss: {val_loss:.4f}, , took {time.time() - training_start_time:.2f}s')
+                        training_start_time = time.time()
+                if early_stopper.early_stop(epoch, val_loss, self.state_dict()):
+                    if verbose > 0:
+                        print(f'Early stopping at epoch {epoch+1}')
+                        print(f'Epoch [{epoch+1}/{epochs}], Loss: {epoch_loss/len(dataloader):.4f}, Val Loss: {val_loss:.4f}')
+                    break
+        if early_stopper is not None:
+            self.load_state_dict(early_stopper.best_weights)
+        return losses
 
     def predict(self, x0: np.ndarray, timesteps: int, **kwargs) -> np.ndarray:
         self.eval()
@@ -98,8 +167,7 @@ class EarlyStopper:
         return False
     
 class DNN(TorchBaseClass):
-    def __init__(
-            self,
+    def __init__(self, 
             embed_dim,
             timesteps,
             **kwargs):
