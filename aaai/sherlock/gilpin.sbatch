@@ -12,7 +12,7 @@
 
 module load python/3.9.0
 export PYTHONPATH=$HOME/.local/lib/python3.9/site-packages:$PYTHONPATH
-
-python3 -m $HOME/dynadojo/generate_gilpin \
-                    --iteration=$SLURM_ARRAY_TASK_ID
-                    --output_dir=$SCRATCH/generate_gilpin
+cd $HOME/dynadojo
+python3 -m generate_gilpin \
+            --iteration=$SLURM_ARRAY_TASK_ID \
+            --output_dir=$SCRATCH/generate_gilpin
