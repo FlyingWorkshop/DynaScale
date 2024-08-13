@@ -14,7 +14,7 @@ fc_challenge_params_dict = {
                     "control_horizons": 0,
                     "system_kwargs": None,
                     "evaluate": {
-                        "seed": 100,
+                        "seed": 200,
                         "algo_kwargs" : None,
                         "fit_kwargs" : None,
                         "act_kwargs" : None,
@@ -57,24 +57,13 @@ fc_challenge_params_dict = {
                 "sindy_30" : { "l" : 30 },
                 "sindy_50" : { "l" : 50 },
                 "sindy_100" : { "l" : 100 },
-            },
+            }
+    ,
     "lorenz" : {
         "default" : {
             "l" : 9,  #MUST BE ODD > 3
             "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
             "t" : 50,
-        },
-        "ode": {
-            "l": 3,
-            "e": 3,
-            "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
-            "t": 50,
-            "trials": 10,
-            "evaluate": {
-                "fit_kwargs": {
-                    "epochs": 100
-                },
-            }
         },
         "lr" : { #FAIL
             "N" : [int(n) for n in np.logspace(1, 3, num=20, endpoint=True)],
@@ -99,6 +88,107 @@ fc_challenge_params_dict = {
         }
         , "sindy_5" : { #FAIL
             "l" : 5,
+        },
+        "ode_long_l19_oldseed": {
+            "l": 19,
+            "e": 19,
+            "trials": 50,
+        },
+        "gru_long_l19": {
+            "l": 19,
+            "trials": 50,
+            "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10
+                        }
+                }
+        }
+    },
+    "lv_p": {
+        "default" : {
+            "l" : 5, 
+            "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
+            "t" : 50,
+        },
+        "ode_long_l9_oldseed": {
+            "l": 9,
+            "e": 9,
+            "trials": 50,
+        },
+        "ode_long_l9_newseed": {
+            "l": 9,
+            "e": 9,
+            "trials": 50,
+        },
+        "ode_long_l5_oldseed": {
+            "l": 5,
+            "e": 5,
+            "trials": 50,
+        },
+        "gru_long_l9": {
+            "l": 9,
+            "trials": 50,
+            "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10,
+                            "min_epochs": 4000
+                        }
+                }
+        }
+    },
+    "kura": {
+        "default" : {
+            "l" : 5, 
+            "N" : [int(n) for n in np.logspace(1, 3, num=10, endpoint=True)],
+            "t" : 100,
+            "test_timesteps" : 100,
+            "system_kwargs": {
+                "COUPLE_range": (0, 1)
+            }
+        },
+        "ode_long_l16_oldseed": {
+            "l": 16,
+            "e": 16,
+            "trials": 50,
+        },
+        "ode_long_l16_newseed": {
+            "l": 16,
+            "e": 16,
+            "trials": 50,
+        },
+        "gru_long_l16": {
+            "l": 16,
+            "trials": 50,
+            "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10,
+                            "min_epochs": 4000
+                        }
+                }
         }
     }
 }
@@ -147,8 +237,31 @@ fts_challenge_params_dict = {
                 },
             "lr" : {
                     "L" : [3, 5, 7, 9, 11],
-                    "reps" : 50,
+                    "trials" : 50,
                     "n" : 1000,
+            },
+            "ode_long2_oldseed" : {
+                    "L" : [3, 5, 7, 9, 11],
+                    "trials" : 50,
+                    "n" : 1000,
+            },
+            "gru_long2" : {
+                    "L" : [3, 5, 7, 9, 11],
+                    "trials" : 50,
+                    "n" : 1000,
+                    "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10
+                        }
+                    }
             }
     },
     "lv_p": { 
@@ -166,7 +279,30 @@ fts_challenge_params_dict = {
                 "L" : [int(n) for n in np.logspace(1, 3, num=20, endpoint=True)],
                 "trials" : 100,
                 "n" : 1000,
-        }
+        },
+        "ode_long_oldeseed" : {
+                "L" : [2, 4, 8, 16, 32],
+                "trials" : 50,
+                "n" : 1000,
+            },
+        "gru_long" : {
+                "L" : [2, 4, 8, 16, 32],
+                "trials" : 50,
+                "n" : 1000,
+                "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10
+                        }
+                }
+            }
     },
     "epi_1": { #done, error going down down down with complexity. weird after merging tommy's edits because 0 error for L = 2, 4?
         "lr_test" : { 
@@ -241,6 +377,33 @@ fts_challenge_params_dict = {
                 "t" : 20,
                 "test_timesteps" : 20,
                 "n" : 1000,
+        },
+        "ode_long_oldseed" : { 
+                "L" : [4, 8, 16, 32],
+                "trials" : 50,
+                "t" : 20,
+                "test_timesteps" : 20,
+                "n" : 1000,
+        },
+        "gru_long" : { 
+                "L" : [4, 8, 16, 32],
+                "trials" : 50,
+                "t" : 20,
+                "test_timesteps" : 20,
+                "n" : 1000,
+                "evaluate": {
+                        "algo_kwargs": {
+                            "num_layers": 5,
+                            "hidden_size": 128,
+                            "lr": 5e-3
+                        },
+                        "fit_kwargs": {
+                            "epochs": 20000,
+                            "early_stopping": True,
+                            "patience": 10,
+                            "min_delta": 10
+                        }
+                }
         },
     },
 

@@ -58,7 +58,7 @@ class ODE(AbstractAlgorithm):
             loss.backward()
             losses.append(loss.item())
             #if epoch % 5 == 0 and kwargs.get('verbose', False):
-            print(f"Epoch {epoch}, Loss {loss.item()}")
+            #print(f"Epoch {epoch}, Loss {loss.item()}")
             warm_opt.step(closure)
             #lr_scheduler.step()
             if loss.item() < 10:
@@ -95,7 +95,7 @@ class ODE(AbstractAlgorithm):
             loss.backward()
             losses.append(loss.item())
             #if epoch % 5 == 0 and kwargs.get('verbose', False):
-            print(f"Epoch {epoch}, Loss {loss.item()}")
+            #print(f"Epoch {epoch}, Loss {loss.item()}")
             self.opt.step()
             lr_scheduler.step()
             

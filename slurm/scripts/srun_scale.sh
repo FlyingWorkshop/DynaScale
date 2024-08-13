@@ -36,7 +36,7 @@ do
 done
 
 data_dir=$opt
-$cmd="scale
+cmd="scale"
 
 chmod +x slurm/jobscripts/$cmd.sh #make the script executable
 srun $DD_SLURM_ARGS --export=all -c 1 slurm/jobscripts/$cmd.sh $data_dir
