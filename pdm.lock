@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:ebab403f642b25a13ff6dd445e0029f2c54e0aa781c8cf4ab3b7e03d077ae915"
+content_hash = "sha256:b2446c8842e4adbad580fd7d4b77bdaf638d141fe8b04fd02bffdd0f13bfc6b5"
 
 [[package]]
 name = "absl-py"
@@ -499,7 +499,7 @@ name = "dill"
 version = "0.3.8"
 requires_python = ">=3.8"
 summary = "serialize all of Python"
-groups = ["dev"]
+groups = ["all", "default", "dev"]
 files = [
     {file = "dill-0.3.8-py3-none-any.whl", hash = "sha256:c36ca9ffb54365bdd2f8eb3eff7d2a21237f8452b57ace88b1ac615b7e815bd7"},
     {file = "dill-0.3.8.tar.gz", hash = "sha256:3ebe3c479ad625c4553aca177444d89b486b1d84982eeacded644afc0cf797ca"},
@@ -535,6 +535,41 @@ dependencies = [
 files = [
     {file = "dysts-0.85-py3-none-any.whl", hash = "sha256:4897cddf00e9d2434a9fa3a946aaf18f4f01effba9883102e6bdc055c200eb04"},
     {file = "dysts-0.85.tar.gz", hash = "sha256:532419a64bba4374582135ad321900845997fd9ad465f6fe64a78c92456f359a"},
+]
+
+[[package]]
+name = "emd-signal"
+version = "1.6.0"
+requires_python = "<4,>=3.6"
+summary = "Implementation of the Empirical Mode Decomposition (EMD) and its variations"
+groups = ["all", "default"]
+dependencies = [
+    "numpy>=1.12",
+    "pathos>=0.2.1",
+    "scipy>=0.19",
+    "tqdm<5.0,>=4.64.0",
+]
+files = [
+    {file = "EMD-signal-1.6.0.tar.gz", hash = "sha256:fd20ec894205075625a1ae51bda53196afe0750118f4e606ba08b9653774cfd5"},
+    {file = "EMD_signal-1.6.0-py3-none-any.whl", hash = "sha256:cd0e6c0bf29fb776fd222c71d56ebabb76cff34724e2cf25882eff0c2e9533d9"},
+]
+
+[[package]]
+name = "entropyhub"
+version = "2.0"
+requires_python = ">=3.6"
+summary = "An open-source toolkit for entropic data analysis."
+groups = ["all", "default"]
+dependencies = [
+    "EMD-signal",
+    "matplotlib",
+    "numpy",
+    "requests",
+    "scipy",
+]
+files = [
+    {file = "EntropyHub-2.0-py3-none-any.whl", hash = "sha256:89389049872a020d2b05f073a9c507a34ff712df13c6332be244d926451c8ab8"},
+    {file = "entropyhub-2.0.tar.gz", hash = "sha256:e3da5804d84a6ff074496f9b34e6b9260b1ed868d0cc6739f7450b42cc0ac3b9"},
 ]
 
 [[package]]
@@ -1549,6 +1584,27 @@ files = [
 ]
 
 [[package]]
+name = "multiprocess"
+version = "0.70.16"
+requires_python = ">=3.8"
+summary = "better multiprocessing and multithreading in Python"
+groups = ["all", "default"]
+dependencies = [
+    "dill>=0.3.8",
+]
+files = [
+    {file = "multiprocess-0.70.16-pp310-pypy310_pp73-macosx_10_13_x86_64.whl", hash = "sha256:476887be10e2f59ff183c006af746cb6f1fd0eadcfd4ef49e605cbe2659920ee"},
+    {file = "multiprocess-0.70.16-pp310-pypy310_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:d951bed82c8f73929ac82c61f01a7b5ce8f3e5ef40f5b52553b4f547ce2b08ec"},
+    {file = "multiprocess-0.70.16-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:37b55f71c07e2d741374998c043b9520b626a8dddc8b3129222ca4f1a06ef67a"},
+    {file = "multiprocess-0.70.16-pp38-pypy38_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:ba8c31889abf4511c7308a8c52bb4a30b9d590e7f58523302ba00237702ca054"},
+    {file = "multiprocess-0.70.16-pp39-pypy39_pp73-macosx_10_13_x86_64.whl", hash = "sha256:0dfd078c306e08d46d7a8d06fb120313d87aa43af60d66da43ffff40b44d2f41"},
+    {file = "multiprocess-0.70.16-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:e7b9d0f307cd9bd50851afaac0dba2cb6c44449efff697df7c7645f7d3f2be3a"},
+    {file = "multiprocess-0.70.16-py310-none-any.whl", hash = "sha256:c4a9944c67bd49f823687463660a2d6daae94c289adff97e0f9d696ba6371d02"},
+    {file = "multiprocess-0.70.16-py311-none-any.whl", hash = "sha256:af4cabb0dac72abfb1e794fa7855c325fd2b55a10a44628a3c1ad3311c04127a"},
+    {file = "multiprocess-0.70.16.tar.gz", hash = "sha256:161af703d4652a0e1410be6abccecde4a7ddffd19341be0a7011b94aeb171ac1"},
+]
+
+[[package]]
 name = "namex"
 version = "0.0.8"
 summary = "A simple utility to separate the implementation of your Python package and its public API surface."
@@ -1692,6 +1748,20 @@ dependencies = [
 files = [
     {file = "neurokit2-0.2.9-py2.py3-none-any.whl", hash = "sha256:65e2274dddc41a652dedb5f9633dbd2accf306f615f6df3a6afa106a1d3e3ef3"},
     {file = "neurokit2-0.2.9.tar.gz", hash = "sha256:48b485e6c4770d643a1681ec57ac6d30f904224772cfbe47511b02b306c73e52"},
+]
+
+[[package]]
+name = "nolds"
+version = "0.6.0"
+summary = "Nonlinear measures for dynamical systems (based on one-dimensional time series)"
+groups = ["all", "default"]
+dependencies = [
+    "future",
+    "numpy<2.0",
+    "setuptools",
+]
+files = [
+    {file = "nolds-0.6.0-py2.py3-none-any.whl", hash = "sha256:e7f1e30e3ece7db1fcb774d27effa4551736f314623087a808e21cef62ece5a6"},
 ]
 
 [[package]]
@@ -1883,6 +1953,23 @@ files = [
 ]
 
 [[package]]
+name = "pathos"
+version = "0.3.2"
+requires_python = ">=3.8"
+summary = "parallel graph management and execution in heterogeneous computing"
+groups = ["all", "default"]
+dependencies = [
+    "dill>=0.3.8",
+    "multiprocess>=0.70.16",
+    "pox>=0.3.4",
+    "ppft>=1.7.6.8",
+]
+files = [
+    {file = "pathos-0.3.2-py3-none-any.whl", hash = "sha256:d669275e6eb4b3fbcd2846d7a6d1bba315fe23add0c614445ba1408d8b38bafe"},
+    {file = "pathos-0.3.2.tar.gz", hash = "sha256:4f2a42bc1e10ccf0fe71961e7145fc1437018b6b21bd93b2446abc3983e49a7a"},
+]
+
+[[package]]
 name = "pexpect"
 version = "4.9.0"
 summary = "Pexpect allows easy control of interactive console applications."
@@ -1951,6 +2038,28 @@ groups = ["dev"]
 files = [
     {file = "platformdirs-4.2.2-py3-none-any.whl", hash = "sha256:2d7a1657e36a80ea911db832a8a6ece5ee53d8de21edd5cc5879af6530b1bfee"},
     {file = "platformdirs-4.2.2.tar.gz", hash = "sha256:38b7b51f512eed9e84a22788b4bce1de17c0adb134d6becb09836e37d8654cd3"},
+]
+
+[[package]]
+name = "pox"
+version = "0.3.4"
+requires_python = ">=3.8"
+summary = "utilities for filesystem exploration and automated builds"
+groups = ["all", "default"]
+files = [
+    {file = "pox-0.3.4-py3-none-any.whl", hash = "sha256:651b8ae8a7b341b7bfd267f67f63106daeb9805f1ac11f323d5280d2da93fdb6"},
+    {file = "pox-0.3.4.tar.gz", hash = "sha256:16e6eca84f1bec3828210b06b052adf04cf2ab20c22fd6fbef5f78320c9a6fed"},
+]
+
+[[package]]
+name = "ppft"
+version = "1.7.6.8"
+requires_python = ">=3.8"
+summary = "distributed and parallel Python"
+groups = ["all", "default"]
+files = [
+    {file = "ppft-1.7.6.8-py3-none-any.whl", hash = "sha256:de2dd4b1b080923dd9627fbdea52649fd741c752fce4f3cf37e26f785df23d9b"},
+    {file = "ppft-1.7.6.8.tar.gz", hash = "sha256:76a429a7d7b74c4d743f6dba8351e58d62b6432ed65df9fe204790160dab996d"},
 ]
 
 [[package]]
@@ -2604,7 +2713,7 @@ name = "setuptools"
 version = "70.0.0"
 requires_python = ">=3.8"
 summary = "Easily download, build, install, upgrade, and uninstall Python packages"
-groups = ["all", "dev"]
+groups = ["all", "default", "dev"]
 files = [
     {file = "setuptools-70.0.0-py3-none-any.whl", hash = "sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4"},
     {file = "setuptools-70.0.0.tar.gz", hash = "sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0"},

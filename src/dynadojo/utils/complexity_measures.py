@@ -6,8 +6,10 @@ from sklearn.decomposition import PCA
 from dysts.utils import jac_fd
 from scipy.spatial.distance import cdist
 from dysts.utils import standardize_ts
+from scipy.optimize import curve_fit
+import EntropyHub as EH
 
-## Helper function for correlation dimension (Gilpin Unmodified)
+## Helper function for correlation dimension
 def estimate_powerlaw(data0):
     """
     Given a 1D array of continuous-valued data, estimate the power law exponent using the 
@@ -25,8 +27,51 @@ def estimate_powerlaw(data0):
     ahat = 1 + n / np.sum(np.log(data / xmin), axis=0)
     return ahat
 
-## Correlation dimension (Gilpin Unmodified)
-def gp_dim(data, y_data=None, rvals=None, nmax=100):
+### Correlation dimension (Outdated)
+#def gp_dim(data, y_data=None, rvals=None, nmax=100):
+#    """
+#    Estimate the Grassberger-Procaccia dimension for a numpy array using the 
+#    empirical correlation integral.
+#
+#    Args:
+#        data (np.array): T x D, where T is the number of datapoints/timepoints, and D
+#            is the number of features/dimensions
+#        y_data (np.array, Optional): A second dataset of shape T2 x D, for 
+#            computing cross-correlation.
+#        rvals (np.array): A list of radii
+#        nmax (int): The number of points at which to evaluate the correlation integral
+#
+#    Returns:
+#        rvals (np.array): The discrete bins at which the correlation integral is 
+#            estimated
+#        corr_sum (np.array): The estimates of the correlation integral at each bin
+#
+#    """
+#    data = np.asarray(data)
+#
+#    # Makes a copy of original data for self correlation
+#    if y_data is None:
+#        y_data = data.copy()
+#
+#    if rvals is None:
+#        std = np.std(data)
+#        rvals = np.logspace(np.log10(0.1 * std), np.log10(0.5 * std), nmax)
+#
+#    n = len(data)
+#    
+#    dists = cdist(data, y_data)
+#    rvals = dists.ravel()
+#
+#    ## Truncate the distance distribution to the linear scaling range
+#    std = np.std(data)
+#    rvals = rvals[rvals > 0]
+#    rvals = rvals[rvals > np.percentile(rvals, 5)]
+#    rvals = rvals[rvals < np.percentile(rvals, 50)]
+#    
+#    return estimate_powerlaw(rvals)
+
+## Correlation Dimension
+def corr_dim(data, y_data=None, rvals=None, nmax=100):
     """
     Estimate the Grassberger-Procaccia dimension for a numpy array using the 
     empirical correlation integral.
@@ -45,9 +90,10 @@ def gp_dim(data, y_data=None, rvals=None, nmax=100):
         corr_sum (np.array): The estimates of the correlation integral at each bin
 
     """
+
     data = np.asarray(data)
 
-    # Makes a copy of original data for self correlation
+    ## For self-correlation
     if y_data is None:
         y_data = data.copy()
 
@@ -56,66 +102,121 @@ def gp_dim(data, y_data=None, rvals=None, nmax=100):
         rvals = np.logspace(np.log10(0.1 * std), np.log10(0.5 * std), nmax)
 
     n = len(data)
-    
-    dists = cdist(data, y_data)
-    rvals = dists.ravel()
 
-    ## Truncate the distance distribution to the linear scaling range
-    std = np.std(data)
-    rvals = rvals[rvals > 0]
-    rvals = rvals[rvals > np.percentile(rvals, 5)]
-    rvals = rvals[rvals < np.percentile(rvals, 50)]
-    
-    return estimate_powerlaw(rvals)
+    # For Gilpin Flows
+    if len(data[0]) > 2:
+        dists = cdist(data, y_data)
+        rvals = dists.ravel()
 
-## Multiscale Entropy (Gilpin Modified)
-def mse_mv(traj, return_info=False, gilpin=False):
+        ## Truncate the distance distribution to the linear scaling range
+        std = np.std(data)
+        rvals = rvals[rvals > 0]
+        rvals = rvals[rvals > np.percentile(rvals, 5)]
+        rvals = rvals[rvals < np.percentile(rvals, 50)]
+        
+        return estimate_powerlaw(rvals)
+
+    # For Gilpin Maps
+    if len(data[0]) <= 2:
+        dists = cdist(data, y_data)
+        rvals = np.sort(dists.ravel())
+        corr_sum = np.arange(len(rvals)).astype(float)
+        corr_sum /= n * (n - 1)
+        std = np.std(data)
+        sel_inds = rvals > 0.1 * std
+        rvals = rvals[sel_inds]
+        corr_sum = corr_sum[sel_inds]
+        sel_inds = rvals < 0.5 * std
+        rvals = rvals[sel_inds]
+        corr_sum = corr_sum[sel_inds]
+
+        ## Drop zeros before regression
+        sel_inds = corr_sum > 0
+        rvals = rvals[sel_inds]
+        corr_sum = corr_sum[sel_inds]
+
+        power_law = lambda x, a, b: a * (x ** b)
+        fit_vals = curve_fit(power_law, rvals, corr_sum)
+        return fit_vals[0][1]
+
+### Multiscale Entropy (Outdated)
+#def mse_mv(traj, return_info=False, gilpin=False):
+#    """
+#    Generate an estimate of the multivariate multiscale entropy. The current version 
+#    computes the entropy separately for each channel and then averages. It therefore 
+#    represents an upper-bound on the true multivariate multiscale entropy
+#
+#    Args:
+#        traj (ndarray): a trajectory of shape (n_timesteps, n_channels)
+#
+#    Returns:
+#        mmse (float): the multivariate multiscale entropy
+#
+#    TODO:
+#        Implement algorithm from Ahmed and Mandic PRE 2011
+#    """
+#    mmse_opts = {"composite": True, "fuzzy": True}
+#
+#    # For univariate data, just calculates once
+#    if len(traj.shape) == 1:
+#        mmse, info = neurokit2.entropy_multiscale(traj, dimension=2, **mmse_opts)
+#        return mmse, info
+#    
+#    # traj has shape T by D
+#    traj = standardize_ts(traj) 
+#    all_mse = list()
+#    all_info = []
+#
+#    # Now D by T, where sol_coord is one dimension across all timepoints
+#    for sol_coord in traj.T:
+#        all_mse.append(
+#            neurokit2.entropy_multiscale(sol_coord, dimension=2, **mmse_opts)[0]
+#        )
+#        all_info.append(
+#            neurokit2.entropy_multiscale(sol_coord, dimension=2, **mmse_opts)[1]["Value"]
+#        )
+#        
+#    if return_info == True:
+#        # Additionally returns a dataframe containing all SampEn values across all dimensions and coarse grainings
+#        return np.sum(all_mse), pd.DataFrame(all_info)
+#    
+#    if gilpin == True:
+#        # If we want to return Gilpin's original version
+#        return np.median(all_mse)
+#    
+#    return np.sum(all_mse)
+
+## Multivariate/Univariate Multiscale Entropy
+def multi_en(data, Scales=5, return_info=False):
     """
-    Generate an estimate of the multivariate multiscale entropy. The current version 
-    computes the entropy separately for each channel and then averages. It therefore 
-    represents an upper-bound on the true multivariate multiscale entropy
-
+    Generate an estimate of the multivariate multiscale entropy by summing the
+    (fuzzy) sample entropy at 82 coarse graining levels and normalizing
+    
     Args:
-        traj (ndarray): a trajectory of shape (n_timesteps, n_channels)
-
+        data (ndarray): a trajectory of shape (n_timesteps, n_channels)
+    
     Returns:
         mmse (float): the multivariate multiscale entropy
-
-    TODO:
-        Implement algorithm from Ahmed and Mandic PRE 2011
+        MSx (optional): the individual sample entropy values for each coarse graining level
     """
-    mmse_opts = {"composite": True, "fuzzy": True}
-
-    # For univariate data, just calculates once
-    if len(traj.shape) == 1:
-        mmse, info = neurokit2.entropy_multiscale(traj, dimension=2, **mmse_opts)
-        return mmse, info
+    # For univariate data
+    if len(data[0]) == 1:
+        EnType = 'FuzzEn'
+        Mobj = EH.MSobject(EnType, Fx = 'constgaussian', r = 1.75, Norm = True)
+        MSx, CI = EH.cMvMSEn(data, Mobj, Scales = Scales)
     
-    # traj has shape T by D
-    traj = standardize_ts(traj) 
-    all_mse = list()
-    all_info = []
+    # For multivariate data
+    else:
+        EnType='MvFuzzEn'
+        Mobj = EH.MSobject(EnType, Fx = 'constgaussian', r = 1.75, Norm = True)
+        MSx, CI = EH.cMvMSEn(data, Mobj, Scales = Scales, Refined = True)
 
-    # Now D by T, where sol_coord is one dimension across all timepoints
-    for sol_coord in traj.T:
-        all_mse.append(
-            neurokit2.entropy_multiscale(sol_coord, dimension=2, **mmse_opts)[0]
-        )
-        all_info.append(
-            neurokit2.entropy_multiscale(sol_coord, dimension=2, **mmse_opts)[1]["Value"]
-        )
-    
     if return_info == True:
-        # Additionally returns a dataframe containing all SampEn values across all dimensions and coarse grainings
-        return np.sum(all_mse), pd.DataFrame(all_info)
+        return CI / Scales, MSx
     
-    if gilpin == True:
-        # If we want to return Gilpin's original version
-        return np.median(all_mse)
-    
-    return np.sum(all_mse)
+    return CI / Scales
 
-## Principal Component Analysis (Original)
+## Principal Component Analysis
 def pca(data, threshold=0.80):
     """
     Calculates the minimum number of components needed to explain 80% of the data's variance
@@ -138,7 +239,7 @@ def pca(data, threshold=0.80):
 
     return n_components
 
-## Lyapunov Spectrum (Gilpin Modified)
+## Lyapunov Spectrum
 def find_lyapunov_exponents(
     trajectory, tpts, traj_length, model, pts_per_period=500, tol=1e-8, min_tpts=10, **kwargs
 ):
@@ -184,8 +285,8 @@ def find_lyapunov_exponents(
     # and return times enabled. To adapt to dynadojo, generation of the trajectectory and timepoints 
     # were moved outside of the function
 
-    #dt is actually the average timestep of the system (Gilpin Typo) used for Backward Euler
-    dt = np.median(np.diff(tpts))
+    # dt is actually the average timestep of the system (Gilpin Typo) used for Backward Euler
+    dt = np.median(np.diff(tpts[0]))
 
     # make an identity matrix of dimension d
     u = np.identity(d)
@@ -205,7 +306,7 @@ def find_lyapunov_exponents(
         t = tpts[0][i] # for some reason, gilpin's makedata returns a single array of
         # float timepoints, which is nested in another array (hence first indexing 0)
         x = trajectory[i]
-        rhsy = lambda a: np.array(model.rhs(a, t)) # define a function 'rhsy', using the model's right hand side diffeq
+        rhsy = lambda a: np.array(model.rhs(a)) # define a function 'rhsy', using the model's right hand side diffeq
         jacval = jac_fd(rhsy, x) # 'a' is a dummy variable that jac_fd plugs values into when it calls rhys.
 
         # NOTE: no idea what this does. Unmodified from Gilpin.
@@ -241,7 +342,7 @@ def find_lyapunov_exponents(
     final_lyap = np.sum(all_lyap, axis=0) / (dt * traj_length)
     return np.sort(final_lyap)[::-1] # return the average exponents in descending order
 
-## Maximum Lyapunov Exponent (Original)
+## Maximum Lyapunov Exponent
 def find_max_lyapunov(spectrum0):
     """
     Given a spectrum of Lyapunov exponents, find the maximum exponent
@@ -257,7 +358,7 @@ def find_max_lyapunov(spectrum0):
             max_exp = exp
     return max_exp
 
-## Kaplan Yorke Dimension (Gilpin Unmodified)
+## Kaplan Yorke Dimension
 def kaplan_yorke_dimension(spectrum0):
     """
     Calculate the Kaplan-Yorke dimension, given a list of
@@ -284,8 +385,8 @@ def kaplan_yorke_dimension(spectrum0):
 
     return dky
 
-## Pesin Entropy (Gilpin Unmodified)
-def pesin(lyapval):
+## Pesin Entropy
+def pesin(spectrum0):
     """
     Calculate the pesin entropy, given a list of
     Lyapunov exponents
@@ -296,10 +397,10 @@ def pesin(lyapval):
         pesin_entropy (float): Pesin entropy
     """
     all_estimates_lyap = list()
-    all_estimates_lyap.append(lyapval)
+    all_estimates_lyap.append(spectrum0)
     
     all_estimates_pesin = list()
-    all_estimates_pesin.append(np.sum(np.array(lyapval)[np.array(lyapval) > 0]))
+    all_estimates_pesin.append(np.sum(np.array(spectrum0)[np.array(spectrum0) > 0]))
 
     pesin_entropy = np.median(all_estimates_pesin)
 
