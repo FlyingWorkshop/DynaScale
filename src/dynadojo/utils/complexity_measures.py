@@ -241,7 +241,7 @@ def pca(data, threshold=0.80):
 
 ## Lyapunov Spectrum
 def find_lyapunov_exponents(
-    trajectory, tpts, traj_length, model, pts_per_period=500, tol=1e-8, min_tpts=10, **kwargs
+    trajectory, tpts, traj_length, model, pts_per_period=500, precomp=False, tol=1e-8, min_tpts=10, **kwargs
 ):
     """
     Given a dynamical system, compute its spectrum of Lyapunov exponents.
@@ -286,7 +286,7 @@ def find_lyapunov_exponents(
     # were moved outside of the function
 
     # dt is actually the average timestep of the system (Gilpin Typo) used for Backward Euler
-    dt = np.median(np.diff(tpts[0]))
+    dt = np.median(np.diff(tpts))
 
     # make an identity matrix of dimension d
     u = np.identity(d)
@@ -306,9 +306,12 @@ def find_lyapunov_exponents(
         t = tpts[0][i] # for some reason, gilpin's makedata returns a single array of
         # float timepoints, which is nested in another array (hence first indexing 0)
         x = trajectory[i]
-        rhsy = lambda a: np.array(model.rhs(a)) # define a function 'rhsy', using the model's right hand side diffeq
-        jacval = jac_fd(rhsy, x) # 'a' is a dummy variable that jac_fd plugs values into when it calls rhys.
-
+        if precomp:
+            jacval = np.array(model.jac(x, t))
+        else:
+            rhsy = lambda a: np.array(model.rhs(a, t)) # define a function 'rhsy', using the model's right hand side diffeq
+            jacval = jac_fd(rhsy, x) # 'a' is a dummy variable that jac_fd plugs values into when it calls rhys.
+        
         # NOTE: no idea what this does. Unmodified from Gilpin.
         # If postprocessing is applied to a trajectory, transform the jacobian into the
         # new coordinates.
