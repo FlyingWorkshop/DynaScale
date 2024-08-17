@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:b2446c8842e4adbad580fd7d4b77bdaf638d141fe8b04fd02bffdd0f13bfc6b5"
+content_hash = "sha256:b0036f71cc8c2325ea6f2c1c440bbee0fac1860c2242e0b2ea4d573fa02e073c"
 
 [[package]]
 name = "absl-py"
@@ -1075,6 +1075,45 @@ dependencies = [
 files = [
     {file = "jsonschema-4.22.0-py3-none-any.whl", hash = "sha256:ff4cfd6b1367a40e7bc6411caec72effadd3db0bbe5017de188f2d6108335802"},
     {file = "jsonschema-4.22.0.tar.gz", hash = "sha256:5b22d434a45935119af990552c862e5d6d564e8f6601206b305a61fdf661a2b7"},
+]
+
+[[package]]
+name = "julia"
+version = "0.6.2"
+requires_python = ">=3.4"
+summary = "Julia/Python bridge with IPython support."
+groups = ["all", "default"]
+files = [
+    {file = "julia-0.6.2-py2.py3-none-any.whl", hash = "sha256:90752f71376fdb9919439d20496c2dab24486dfa4fe8a831d6dd14a1bcbc04d1"},
+    {file = "julia-0.6.2.tar.gz", hash = "sha256:35eefc030671392b79ba0e1898b7103ed1286ad044783c4cadc99d4401c368e3"},
+]
+
+[[package]]
+name = "juliacall"
+version = "0.9.22"
+requires_python = "~=3.8"
+summary = "Julia and Python in seamless harmony"
+groups = ["all", "default"]
+dependencies = [
+    "juliapkg~=0.1.8",
+]
+files = [
+    {file = "juliacall-0.9.22-py3-none-any.whl", hash = "sha256:47fb2ced6e16eb67c7bdc5527d426e640d01f89e7257aabc60ece79437f6f85e"},
+    {file = "juliacall-0.9.22.tar.gz", hash = "sha256:d2d2a6a8c80c050034227ed91b9a1383649fb2ad21ad5003b9128c0a5b8ff45d"},
+]
+
+[[package]]
+name = "juliapkg"
+version = "0.1.13"
+requires_python = "~=3.8"
+summary = "Julia version manager and package manager"
+groups = ["all", "default"]
+dependencies = [
+    "semver~=3.0",
+]
+files = [
+    {file = "juliapkg-0.1.13-py3-none-any.whl", hash = "sha256:2a629fe393bccdf024c675380c98271c42998dcd3601101bc6dc997f10595ac9"},
+    {file = "juliapkg-0.1.13.tar.gz", hash = "sha256:4273ac66ef4b4d6832b995af2c7a80d5e8a1c22567cba1846d61bf23dd9335c3"},
 ]
 
 [[package]]
@@ -2695,6 +2734,17 @@ dependencies = [
 files = [
     {file = "seaborn-0.13.2-py3-none-any.whl", hash = "sha256:636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987"},
     {file = "seaborn-0.13.2.tar.gz", hash = "sha256:93e60a40988f4d65e9f4885df477e2fdaff6b73a9ded434c1ab356dd57eefff7"},
+]
+
+[[package]]
+name = "semver"
+version = "3.0.2"
+requires_python = ">=3.7"
+summary = "Python helper for Semantic Versioning (https://semver.org)"
+groups = ["all", "default"]
+files = [
+    {file = "semver-3.0.2-py3-none-any.whl", hash = "sha256:b1ea4686fe70b981f85359eda33199d60c53964284e0cfb4977d243e37cf4bf4"},
+    {file = "semver-3.0.2.tar.gz", hash = "sha256:6253adb39c70f6e51afed2fa7152bcd414c411286088fb4b9effb133885ab4cc"},
 ]
 
 [[package]]

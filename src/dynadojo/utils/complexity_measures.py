@@ -190,7 +190,8 @@ def corr_dim(data, y_data=None, rvals=None, nmax=100):
 def multi_en(data, Scales=5, return_info=False):
     """
     Generate an estimate of the multivariate multiscale entropy by summing the
-    (fuzzy) sample entropy at 82 coarse graining levels and normalizing
+    (fuzzy) sample entropy at 5 coarse graining levels and normalizing.
+    note. manually increasing scale will increase multi_en value
     
     Args:
         data (ndarray): a trajectory of shape (n_timesteps, n_channels)
@@ -212,9 +213,9 @@ def multi_en(data, Scales=5, return_info=False):
         MSx, CI = EH.cMvMSEn(data, Mobj, Scales = Scales, Refined = True)
 
     if return_info == True:
-        return CI / Scales, MSx
+        return CI, MSx
     
-    return CI / Scales
+    return CI
 
 ## Principal Component Analysis
 def pca(data, threshold=0.80):
