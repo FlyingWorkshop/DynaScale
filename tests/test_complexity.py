@@ -1,0 +1,104 @@
+import unittest
+from parameterized import parameterized
+from dynadojo.wrappers import SystemChecker
+from dynadojo.systems.gilpin_flows import GilpinFlowsSystem
+import numpy as np
+import EntropyHub as EH
+from dynadojo.utils.julia_in_python import julia_find_lyapunov
+from dynadojo.utils.complexity_measures import multi_en, corr_dim, find_lyapunov_exponents
+
+ALL_FLOWS = [
+    "Lorenz",
+    "Rossler"
+]
+
+ALL_MAPS = [
+    "Henon",
+    "Ikeda"
+]
+
+ALL_CANONCIAL = {
+    "Lorenz": {
+        "corr_dim": 2.06,
+    },
+    "Rossler": {
+        "corr_dim": 2.01,
+    },
+    "Henon": {
+        "corr_dim": 1.261
+    },"Ikeda": {
+        "corr_dim": 1.7
+    }
+}
+
+flows = ALL_FLOWS  # To test multiple systems, add them to this list
+maps = ALL_MAPS
+
+class TestCorrDim(unittest.TestCase):
+
+    @parameterized.expand(flows)
+    def test_corr_dim_flows(self, flows):
+        data = np.loadtxt(f"tests/{flows}_dim3_seed1_timestep1000_inDist.csv", delimiter=',')
+        corr_dim_calc = corr_dim(data)
+        corr_dim_canon = ALL_CANONCIAL[flows]["corr_dim"]
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+
+    @parameterized.expand(maps)
+    def test_corr_dim_maps(self, maps):
+        data = np.loadtxt(f"tests/{maps}_dim2_seed1_timestep1000_inDist.csv", delimiter=',')
+        corr_dim_calc = corr_dim(data)
+        corr_dim_canon = ALL_CANONCIAL[maps]["corr_dim"]
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+
+class TestMultiEn(unittest.TestCase):
+
+    def test_multi_en(self):
+        data = EH.ExampleData('lorenz')
+        CI_calc, MSx_calc = multi_en(data, Scales = 5, return_info=True)
+        CI_canon = 0.04603960
+        Msx_canon = [0,  0.00796833,  0.00926765,  0.01193731,  0.01686631]
+        np.testing.assert_allclose(CI_calc, CI_canon, rtol=0.1)
+        np.testing.assert_allclose(MSx_calc, Msx_canon, rtol=0.1)
+
+class TestLyapunov(unittest.TestCase):
+
+    def test_lorenz(self):
+        system = SystemChecker(GilpinFlowsSystem(latent_dim=3, embed_dim=3, system_name="Lorenz", seed=1))
+        unwrapped_system = system._system
+        model = unwrapped_system.system
+
+        model.beta = 8/3
+        model.rho = 28
+        model.sigma = 10
+        timesteps = 1000
+        x0 = np.array([[-9.7869288, -15.03852, 20.533978]])
+
+        xtpts, x = unwrapped_system.make_data(x0, timesteps=timesteps, return_times=True)
+        spectrum_calc = find_lyapunov_exponents(x[0], xtpts, timesteps, model)
+
+        spectrum_canon = [0.906, 0, -14.572]
+        spectrum_julia = julia_find_lyapunov("Lorenz", timesteps=timesteps, u0=[-9.7869288, -15.03852, 20.533978], p=[8/3, 28, 10])
+
+        np.testing.assert_allclose(spectrum_calc, spectrum_julia, rtol=0.1)
+        np.testing.assert_allclose(spectrum_calc, spectrum_canon, rtol=0.1)
+
+    def test_rossler(self):
+        system = SystemChecker(GilpinFlowsSystem(latent_dim=3, embed_dim=3, system_name="Rossler", seed=1))
+        unwrapped_system = system._system
+        model = unwrapped_system.system
+
+        model.a = 0.2
+        model.b = 0.2
+        model.c = 5.7
+        timesteps = 1000
+        x0 = np.array([[6.5134412, 0.4772013, 0.34164294]])
+
+        xtpts, x = unwrapped_system.make_data(x0, timesteps=timesteps, return_times=True)
+        spectrum_calc = find_lyapunov_exponents(x[0], xtpts, timesteps, model)
+
+        spectrum_canon = [0.0714, 0, -5.3943]
+        spectrum_julia = julia_find_lyapunov("Rossler", timesteps=timesteps, u0=[6.5134412, 0.4772013, 0.34164294], p=[0.2, 0.2, 5.7])
+
+        np.testing.assert_allclose(spectrum_calc, spectrum_julia, rtol=0.1)
+        np.testing.assert_allclose(spectrum_calc, spectrum_canon, rtol=0.1)
+        
