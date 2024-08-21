@@ -69,14 +69,14 @@ class TestCorrDim(unittest.TestCase):
         data = np.loadtxt(f"tests/{flows}_dim3_seed1_timestep1000_inDist.csv", delimiter=',')
         corr_dim_calc = corr_dim(data)
         corr_dim_canon = ALL_CANONCIAL[flows]["corr_dim"]
-        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.01)
 
     @parameterized.expand(maps)
     def test_corr_dim_maps(self, maps):
         data = np.loadtxt(f"tests/{maps}_dim2_seed1_timestep1000_inDist.csv", delimiter=',')
         corr_dim_calc = corr_dim(data)
         corr_dim_canon = ALL_CANONCIAL[maps]["corr_dim"]
-        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.01)
 
 class TestMultiEn(unittest.TestCase):
 
@@ -85,8 +85,8 @@ class TestMultiEn(unittest.TestCase):
         CI_calc, MSx_calc = multi_en(data, Scales = 5, return_info=True)
         CI_canon = 0.04603960
         Msx_canon = [0,  0.00796833,  0.00926765,  0.01193731,  0.01686631]
-        np.testing.assert_allclose(CI_calc, CI_canon, rtol=0.1)
-        np.testing.assert_allclose(MSx_calc, Msx_canon, rtol=0.1)
+        np.testing.assert_allclose(CI_calc, CI_canon, rtol=0.01)
+        np.testing.assert_allclose(MSx_calc, Msx_canon, rtol=0.01)
 
 class TestLyapunov(unittest.TestCase):
 
@@ -94,27 +94,27 @@ class TestLyapunov(unittest.TestCase):
         spectrum_canon = [0.906, 0, -14.572]
         spectrum_julia = julia_find_lyapunov("Lorenz", timesteps=timesteps, u0=[-9.7869288, -15.03852, 20.533978], p=[8/3, 28, 10])
 
-        np.testing.assert_allclose(lspectrum_calc, spectrum_julia, rtol=0.1)
-        np.testing.assert_allclose(lspectrum_calc, spectrum_canon, rtol=0.1)
+        np.testing.assert_allclose(lspectrum_calc, spectrum_julia, rtol=0.01)
+        np.testing.assert_allclose(lspectrum_calc, spectrum_canon, rtol=0.01)
 
     def test_rossler(self):
         spectrum_canon = [0.0714, 0, -5.3943]
         spectrum_julia = julia_find_lyapunov("Rossler", timesteps=timesteps, u0=[6.5134412, 0.4772013, 0.34164294], p=[0.2, 0.2, 5.7])
 
-        np.testing.assert_allclose(rspectrum_calc, spectrum_julia, rtol=0.1)
-        np.testing.assert_allclose(rspectrum_calc, spectrum_canon, rtol=0.1)
+        np.testing.assert_allclose(rspectrum_calc, spectrum_julia, rtol=0.01)
+        np.testing.assert_allclose(rspectrum_calc, spectrum_canon, rtol=0.01)
 
 class TestKYDim(unittest.TestCase):
 
     def test_lorenz(self):
         ky_dim_calc = kaplan_yorke_dimension(lspectrum_calc)
         ky_dim_canon = 2.075158758095728
-        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.01)
 
     def test_rossler(self):
         ky_dim_calc = kaplan_yorke_dimension(rspectrum_calc)
         ky_dim_canon = 2.0146095059018845
-        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.01)
 
 class TestPesinEn(unittest.TestCase):
 
