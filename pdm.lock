@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:b0036f71cc8c2325ea6f2c1c440bbee0fac1860c2242e0b2ea4d573fa02e073c"
+content_hash = "sha256:0c2a8a553c8864454e6b4cd023fbc917b2f8c23c579ba3536ee57ccfa1075006"
 
 [[package]]
 name = "absl-py"
@@ -603,6 +603,26 @@ groups = ["dev"]
 files = [
     {file = "fastjsonschema-2.19.1-py3-none-any.whl", hash = "sha256:3672b47bc94178c9f23dbb654bf47440155d4db9df5f7bc47643315f9c405cd0"},
     {file = "fastjsonschema-2.19.1.tar.gz", hash = "sha256:e3126a94bdc4623d3de4485f8d468a12f02a67921315ddc87836d6e456dc789d"},
+]
+
+[[package]]
+name = "fathon"
+version = "1.3.3.post1"
+requires_python = ">=3.8"
+summary = "A python package for detrended fluctuation analysis (DFA) and related algorithms."
+groups = ["all", "default"]
+dependencies = [
+    "numpy>=1.24.4",
+]
+files = [
+    {file = "fathon-1.3.3.post1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0158f13e144fb1d5e4f106a07b1a68c8bdcf44267c0beacc0fae3d31f8751256"},
+    {file = "fathon-1.3.3.post1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:017ce8d2ece04cc77d3bc1272fd7d204eb7587c0da987a82b1af2bca813a5d70"},
+    {file = "fathon-1.3.3.post1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:267c29ea501c464958e82c5988d9216e051b4888af5d6e2486994934167ad15d"},
+    {file = "fathon-1.3.3.post1-cp310-cp310-win_amd64.whl", hash = "sha256:0364bd60194fec6c979004aa8f18e75e070a96dd1f5c4e73e4e32551dc98fe2c"},
+    {file = "fathon-1.3.3.post1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:88da803245a29c3b50a155493360edc998e7a9f224efb027efa7b71a6b94fb20"},
+    {file = "fathon-1.3.3.post1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a469091f1a2fc5f2d8a6cdad24f9bf9e049f6802cde801e5581ed25b84fc24d9"},
+    {file = "fathon-1.3.3.post1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:86dbdda0b6eb1fc68c93379f54dc40a1da37710b08e7b3d85d18f9bf00cc5785"},
+    {file = "fathon-1.3.3.post1-cp311-cp311-win_amd64.whl", hash = "sha256:1865584313744b18b0453fe5bd88c1a03f035eb422a21c14a60214aa9cea1330"},
 ]
 
 [[package]]
