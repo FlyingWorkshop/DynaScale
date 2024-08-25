@@ -75,11 +75,13 @@ class GilpinFlowsSystem(AbstractSystem):
         
         try:
             module = importlib.import_module('dysts.flows')
-            SystemClass = getattr(module, self.system_name)
+            SystemClass = getattr(module, system_name)
             self.system = SystemClass()
         except (ModuleNotFoundError, AttributeError) as e:
             raise ValueError(f"Unsupported system: {self.system_name}") from e
-        
+
+        setattr(self, 'rhs', self.system.rhs)
+        #setattr(self, 'jac', self.system.jac)        
         data = self.system._load_data()
         self._embed_dim = data.get("embedding_dimension")
         self._latent_dim = self._embed_dim
@@ -90,7 +92,7 @@ class GilpinFlowsSystem(AbstractSystem):
             "hamiltonian", "initial_conditions", "kaplan_yorke_dimension", 
             "lyapunov_spectrum_estimated", "maximum_lyapunov_estimated", 
             "multiscale_entropy", "nonautonomous", "parameters", "period", 
-            "pesin_entropy", "unbounded_indices"
+            "pesin_entropy", "unbounded_indices",
         ]
 
         for attr in attributes:

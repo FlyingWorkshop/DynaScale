@@ -5,7 +5,6 @@ import neurokit2
 from sklearn.decomposition import PCA
 from dysts.utils import jac_fd
 from scipy.spatial.distance import cdist
-from dysts.utils import standardize_ts
 from scipy.optimize import curve_fit
 import EntropyHub as EH
 
@@ -242,51 +241,52 @@ def pca(data, threshold=0.80):
 
 ## Lyapunov Spectrum
 def find_lyapunov_exponents(
-    trajectory, tpts, traj_length, model, pts_per_period=500, precomp=False, tol=1e-8, min_tpts=10, **kwargs
-):
+    model, traj_length, ic, pts_per_period=500, tol=1e-8, min_tpts=10, **kwargs):
     """
     Given a dynamical system, compute its spectrum of Lyapunov exponents.
     Args:
-        trajectory (ndarray): an NxD array where T is number of timesteps and D is the dimensionality
-            of a trajectory (each row is a datapoint in D-dimensional space)
-        tpts (ndarray): an array with T entries, where the ith entry corresponds to the time of the ith
-            datapoint in the trajectory array
-        model (callable): the right hand side of a differential equation, in format 
-            func(X, t)
+        model (callable): a python object representing a system, with specified RHS,
+        parameters, and length of timestep
+        initial condition (nparray): double nested NxD array. An array of N arrays that are
+        initial conditions with D dimensions. The function will only return the spectrum of
+        the first initial condition.
         traj_length (int): the length of each trajectory used to calulate Lyapunov
             exponents
-        pts_per_period (int): the sampling density of the trajectory
+        pts_per_period (int): the sampling density of the trajectory; set to 500 to match
+        William Gilpin's sampling density.
         kwargs: additional keyword arguments to pass to the model's make_trajectory 
-            method
+            method. Currently unused
 
     Returns:
         final_lyap (ndarray): A list of computed Lyapunov exponents
 
     References:
+        William Gilpin
         Christiansen & Rugh (1997). Computing Lyapunov spectra with continuous
             Gram-Schmidt orthonormalization
-
-    TODO: Change params
-        model -> trajectory data array, timepoints data array, rhs equations
-        see if we can bypass tpts and rhs, by working only with trajectory data.
-
-        tpts needed for: 
-        1. calculating an average timestep dt for Euler
-        2. accessing the RHS/Jacobian at a trajectory point
-        3. normalizing the sum of each dimension's lyapunov exponent over time to find an average
-
-        rhs needed for:
-        1. finding the Jacobian
     """
+    try:
+        rhs = model.rhs
+    except AttributeError:
+        raise ValueError(f"Calculation unavailable. System does not have a method for an RHS")
+    
+    try:
+        jac = model.jac
+    except AttributeError:
+        jac = None
+                
+    # make arrays for the trajectory and its corresponding timepoints
+    tpts, traj = model.make_data(ic, traj_length, pts_per_period=pts_per_period, return_times=True)
+    # traj has shape (traj_length, d), where d is the dimension of the system
+    # tpts has shape (traj_length,) and is used for:
+    # 1. calculating an average timestep dt for Euler
+    # 2. accessing the RHS/Jacobian at a trajectory point
+    # 3. normalizing the sum of each dimension's lyapunov exponent over time to find an average
 
     # get the dimensionality of the system from the trajectory (Gilpin's gets it from the model)
-    d = np.asarray(trajectory).shape[-1]
+    d = np.asarray(traj).shape[-1]
 
-    # Gilpin's original calls the "make_trajectory" method of his model here, with resampling
-    # and return times enabled. To adapt to dynadojo, generation of the trajectectory and timepoints 
-    # were moved outside of the function
-
-    # dt is actually the average timestep of the system (Gilpin Typo) used for Backward Euler
+    # dt is the average timestep of the system used for Backward Euler
     dt = np.median(np.diff(tpts))
 
     # make an identity matrix of dimension d
@@ -294,7 +294,7 @@ def find_lyapunov_exponents(
 
     # Contains all full lyapunov spectrums for every point along trajectory
     # a list/vector of subvectors; subvectors contain lyapunov spectrum of a point in time
-    all_lyap = list()  
+    all_lyap = list() 
 
     # iterates over each time point t and corresponding state X.
     # If the model does not provide a Jacobian (model.jac), 
@@ -302,17 +302,18 @@ def find_lyapunov_exponents(
     # using the righthand side (Gilpin's systems have an RHS property)
     # This code is modified from Gilpin, who originally used his model's Jacobian method
     # directly when it was available (Dynadojo does not have a Jacobian method so this was removed)
-        
+
     for i in range(traj_length): # Compute the Jacobian numerically at time t and state x
-        t = tpts[0][i] # for some reason, gilpin's makedata returns a single array of
-        # float timepoints, which is nested in another array (hence first indexing 0)
-        x = trajectory[i]
-        if precomp:
-            jacval = np.array(model.jac(x, t))
-        else:
-            rhsy = lambda a: np.array(model.rhs(a, t)) # define a function 'rhsy', using the model's right hand side diffeq
+        t = tpts[0][i] # For the make_data function (at least the GilpinFlows one), tpts and traj are arrays of trajectories,
+        x = traj[0][i] # so the first indices of tpts and traj correspond to different trajectories and the second to points
+        # within one given trajectory
+
+        if jac is None or jac(ic, 0) is None: # calculate analytically the jacobian from the RHS
+            rhsy = lambda a: np.array(rhs(a, t)) # define a function 'rhsy', using the model's right hand side diffeq
             jacval = jac_fd(rhsy, x) # 'a' is a dummy variable that jac_fd plugs values into when it calls rhys.
-        
+        else:
+            jacval = np.array(jac(x, t)) # use the jacobian if already defined
+
         # NOTE: no idea what this does. Unmodified from Gilpin.
         # If postprocessing is applied to a trajectory, transform the jacobian into the
         # new coordinates.
@@ -325,6 +326,9 @@ def find_lyapunov_exponents(
             # dydh = jac_fd(y2h, X0, m=2, eps=1e-2) @ rhsy(X0) + jac_fd(y2h, y0) @ jac_fd(rhsy, X0))
             jacval = dhdy @ jacval @ dydh
 
+        ## Forward Euler update (unused)
+        # u_n = np.matmul(np.eye(d) + jacval * dt, u)
+        
         ## Backward Euler update
         if i < 1: continue
         u_n = np.matmul(np.linalg.inv(np.eye(d) - jacval * dt), u)
