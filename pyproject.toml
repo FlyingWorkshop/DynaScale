@@ -17,7 +17,15 @@ dependencies = [
     "cellpylib",
     "pysindy",
     "pydmd",
-    "seaborn"
+    "seaborn",
+    "dysts>=0.85",
+    "neurokit2>=0.2.9",
+    "nolds>=0.6.0",
+    "EntropyHub>=2.0",
+    "juliacall>=0.9.22",
+    "juliapkg>=0.1.13",
+    "julia>=0.6.2",
+    "fathon>=1.3.3.post1",
 ]
 requires-python = ">=3.10,<=3.11"
 readme = "README.md"
