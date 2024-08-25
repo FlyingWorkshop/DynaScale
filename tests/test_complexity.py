@@ -67,14 +67,14 @@ class TestCorrDim(unittest.TestCase):
         data = np.loadtxt(f"tests/{flows}_dim3_seed1_timestep1000_inDist.csv", delimiter=',')
         corr_dim_calc = corr_dim(data)
         corr_dim_canon = ALL_CANONCIAL[flows]["corr_dim"]
-        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.01)
 
     @parameterized.expand(maps)
     def test_corr_dim_maps(self, maps):
         data = np.loadtxt(f"tests/{maps}_dim2_seed1_timestep1000_inDist.csv", delimiter=',')
         corr_dim_calc = corr_dim(data)
         corr_dim_canon = ALL_CANONCIAL[maps]["corr_dim"]
-        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(corr_dim_calc, corr_dim_canon, rtol=0.01)
 
 class TestMultiEn(unittest.TestCase):
 
@@ -110,12 +110,12 @@ class TestKYDim(unittest.TestCase):
     def test_lorenz(self):
         ky_dim_calc = kaplan_yorke_dimension(lspectrum_calc)
         ky_dim_canon = 2.075158758095728
-        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.01)
 
     def test_rossler(self):
         ky_dim_calc = kaplan_yorke_dimension(rspectrum_calc)
         ky_dim_canon = 2.0146095059018845
-        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.1)
+        np.testing.assert_allclose(ky_dim_calc, ky_dim_canon, rtol=0.01)
 
 class TestPesinEn(unittest.TestCase):
 
